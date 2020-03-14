@@ -8,9 +8,27 @@ plugins:
 provider:
   name: aws
   runtime: nodejs10.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        Fn::GetAtt:
+          - TodosTable
+          - Arn
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
+
+  # Environment Variables
+  environment:
+    TODOS_TABLE: 'TODO'
+    INDEX_NAME: 'TODO_I'
 
 functions:
 
@@ -59,4 +77,29 @@ functions:
 
 resources:
   Resources:
-    # TODO: Add any necessary AWS resources
+    TodosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: partitionKey
+            AttributeType: S
+          - AttributeName: sortKey
+            AttributeType: S
+          - AttributeName: indexKey
+            AttributeType: S
+        KeySchema:
+          - AttributeName: partitionKey
+            KeyType: HASH
+          - AttributeName: sortKey
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODOS_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.INDEX_NAME}
+            KeySchema:
+              - AttributeName: partitionKey
+                KeyType: HASH
+              - AttributeName: indexKey
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index

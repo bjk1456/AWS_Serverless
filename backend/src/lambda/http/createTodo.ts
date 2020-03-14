@@ -4,22 +4,39 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 
+const AWS = require('aws-sdk')
+const uuid = require('uuid')
+
+const docClient = new AWS.DynamoDB.DocumentClient()
+//const groupsTable = process.env.GROUPS_TABLE
+const groupsTable = "TODO"
+
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // @ts-ignore
+  const itemId = uuid.v4()
+
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
-  // @ts-ignore
-  const name = newTodo.name
-  // @ts-ignore
-  const dueDate = newTodo.dueDate
+
+  const newItem = {
+    partitionKey: itemId,
+    sortKey: newTodo.name,
+    ...newTodo
+  }
+
+  await docClient.put({
+    TableName: groupsTable,
+    Item: newItem
+  }).promise()
 
   console.log("The name is ${name} the dueDate is ${dueDate}")
+  console.log("The groupsTable is ${groupsTable}")
 
-  // TODO: Implement creating a new TODO item
   return {
-    statusCode: 200,
+    statusCode: 201,
+    headers: {
+    'Access-Control-Allow-Origin': '*'
+  },
     body: JSON.stringify({
-      message: 'Hello world',
-      input: event,
+      newItem
     })
   }
 }
