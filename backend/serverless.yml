@@ -29,6 +29,7 @@ provider:
   environment:
     TODOS_TABLE: 'TODO'
     INDEX_NAME: 'TODO_I'
+    AUTH_0_SECRET: 'VBeGjHbQUn8l0qIwKCCK4tf21D1cA242'
 
 functions:
 
@@ -42,6 +43,8 @@ functions:
       - http:
           method: get
           path: todos
+          authorizer: Auth
+          cors: true
 
   # TODO: Configure this function
   CreateTodo:
@@ -50,6 +53,7 @@ functions:
       - http:
           method: post
           path: todos
+          authorizer: Auth
 
   # TODO: Configure this function
   UpdateTodo:
@@ -66,6 +70,7 @@ functions:
       - http:
           method: delete
           path: todos/{todoId}
+          authorizer: Auth
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -77,6 +82,16 @@ functions:
 
 resources:
   Resources:
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST,PUT,PATCH'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:
