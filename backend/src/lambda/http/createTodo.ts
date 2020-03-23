@@ -8,6 +8,7 @@ import {parseUserId} from "../../auth/utils";
 
 import {getToken} from "../auth/auth0Authorizer";
 
+
 // @ts-ignore
 import * as events from "events";
 // @ts-ignore
@@ -42,11 +43,14 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     console.log(`event.headers[key] == ${event.headers[key]}`)
   }
 
+  let createdAt = new Date();
+  console.log(`createdAt == ${createdAt}`)
 
 
   const newItem = {
     partitionKey: itemId,
     sortKey: userId,
+    createdAt,
     ...newTodo
   }
 

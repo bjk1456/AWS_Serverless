@@ -15,7 +15,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     console.log(`todoId equals ${todoId}`)
 
     const jwt = getToken(event.headers.Authorization)
-
     const userId = parseUserId(jwt)
 
     console.log(`userId is ${userId}`)
@@ -31,9 +30,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     await docClient.delete(params, function(err, data) {
         if (err) {
-            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+            returnMsg = "Unable to delete item. Error JSON:", JSON.stringify(err, null, 2);
         } else {
-            console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+            returnMsg = "Delete Item succeeded:", JSON.stringify(data, null, 2);
         }
 
     }).promise()
