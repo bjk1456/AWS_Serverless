@@ -4,47 +4,24 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
 import {getToken} from "../auth/auth0Authorizer";
-import {parseUserId} from "../../auth/utils";
 
-const AWS = require('aws-sdk')
+import {updateTodo} from "../../businessLogic/todos";
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const groupsTable = "TODO"
+
+
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
   const todoId = event.pathParameters.todoId
-  let returnMsg = `${todoId} wasn't deleted`
   const jwt = getToken(event.headers.Authorization)
-  const userId = parseUserId(jwt)
 
-  const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
 
-  console.log(`updatedTodo.done == ${updatedTodo.done}`)
+  const todoToUpdate: UpdateTodoRequest = JSON.parse(event.body)
 
-  const params = {
-    TableName: groupsTable,
-    Key:{
-      "partitionKey": todoId,
-      "sortKey": userId
-    },
-    UpdateExpression: "set #n=:n, dueDate=:dd, #d=:dne",
-    ExpressionAttributeNames: {"#n":"name","#d":"done"},
-    ExpressionAttributeValues: {
-      ":n": updatedTodo.name,
-      ":dd": updatedTodo.dueDate,
-      ":dne": updatedTodo.done
-    },
-    ReturnValues:"UPDATED_NEW"
-  };
+  console.log(`updatedTodo.done == ${todoToUpdate.done}`)
 
-  await docClient.update(params, function(err, data) {
-    if (err) {
-      returnMsg = "Unable to update item. Error JSON:", JSON.stringify(err, null, 2);
-    } else {
-      returnMsg = "UpdateItem succeeded:", JSON.stringify(data, null, 2);
-    }
-  }).promise()
+  const updatedTodo = await updateTodo(todoId, jwt, todoToUpdate )
+
 
   return {
     statusCode: 200,
@@ -52,7 +29,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Origin': '*'
     },
     body: JSON.stringify({
-      returnMsg
+      updatedTodo
     })
   }
 }

@@ -103,25 +103,23 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: partitionKey
+          - AttributeName: userId
             AttributeType: S
-          - AttributeName: sortKey
-            AttributeType: S
-          - AttributeName: indexKey
+          - AttributeName: todoId
             AttributeType: S
         KeySchema:
-          - AttributeName: partitionKey
+          - AttributeName: userId
             KeyType: HASH
-          - AttributeName: sortKey
+          - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
             KeySchema:
-              - AttributeName: partitionKey
+              - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: indexKey
+              - AttributeName: todoId
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
@@ -132,8 +130,7 @@ resources:
         BucketName: ${self:provider.environment.IMAGES_S3_BUCKET}
         CorsConfiguration:
           CorsRules:
-            -
-              AllowedOrigins:
+            - AllowedOrigins:
                 - '*'
               AllowedHeaders:
                 - '*'
