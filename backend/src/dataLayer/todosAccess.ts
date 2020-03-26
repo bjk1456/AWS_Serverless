@@ -2,25 +2,34 @@ import 'source-map-support/register'
 import {DocumentClient} from 'aws-sdk/lib/dynamodb/document_client';
 
 import { TodoItem } from '../models/TodoItem'
-import * as AWS from 'aws-sdk';
 import {TodoUpdate} from "../models/TodoUpdate";
+const logger = createLogger("todoAccess");
+
+import * as AWS from 'aws-sdk'
+import * as AWSXRay from 'aws-xray-sdk'
+import {createLogger} from "../utils/logger";
 
 
 const groupsTable = process.env.TODOS_TABLE;
 
 export class TodosAccess {
 
-
     constructor(
-        private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
+        // @ts-ignore
+        private readonly XAWS = AWSXRay.captureAWS(AWS),
+        private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
         private readonly todosTable = groupsTable) {
 
     }
 
-    async getAllTodos(): Promise<TodoItem[]> {
-
-       const result = await this.docClient.scan({
-            TableName: this.todosTable
+    async getAllTodos(userId:string): Promise<TodoItem[]> {
+       logger.info("Fetching all todos")
+       const result = await this.docClient.query({
+           TableName: this.todosTable,
+           KeyConditionExpression: "userId = :userId",
+           ExpressionAttributeValues: {
+               ":userId": userId
+           }
         }).promise()
 
 
@@ -29,7 +38,7 @@ export class TodosAccess {
     }
 
     async saveTodo(todo:TodoItem){
-
+        logger.info(`Saving ${todo}`)
         await this.docClient.put({
             TableName: groupsTable,
             Item: todo
@@ -38,6 +47,7 @@ export class TodosAccess {
     }
 
     async deleteTodo(todoId:string, userId:string){
+        logger.info(`Deleting todo with id of ${todoId}`)
         const params = {
             TableName: groupsTable,
             Key:{
@@ -50,6 +60,7 @@ export class TodosAccess {
     }
 
     async updateTodo(todoId:string, userId:string, updatedTodo:TodoUpdate){
+        logger.info(`Updating todo with id of ${todoId}`)
         const params = {
             TableName: groupsTable,
             Key:{
@@ -66,14 +77,7 @@ export class TodosAccess {
             ReturnValues:"ALL_NEW"
         };
         const result = await this.docClient.update(params).promise()
-        const attributes = result.Attributes
-        console.log(`About to call attributes`)
-        console.log(`the attributes.createdAt are ${attributes.createdAt}`)
 
-        for (const key in attributes.keys) {
-            console.log(`key == ${key}`)
-            console.log(`attributes.headers[key] == ${attributes.headers[key]}`)
-        }
         return result
     }
 }

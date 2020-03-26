@@ -15,9 +15,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   let newTodoItem = <TodoItem>newTodo
   const token = getToken(event.headers.Authorization)
-
   const resp = await saveTodo(newTodoItem, token)
-  console.log(`Inside of createTodos resp is${resp}`)
+
   return {
     statusCode: 201,
     headers: {

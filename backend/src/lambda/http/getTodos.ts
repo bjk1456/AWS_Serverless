@@ -3,11 +3,11 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 
 import {getAllTodos} from '../../businessLogic/todos'
+import {getToken} from "../auth/auth0Authorizer";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    console.log("The body is ", JSON.parse(event.body))
-
-    const todos = await getAllTodos()
+    const token = getToken(event.headers.Authorization)
+    const todos = await getAllTodos(token)
 
     return {
         statusCode: 200,

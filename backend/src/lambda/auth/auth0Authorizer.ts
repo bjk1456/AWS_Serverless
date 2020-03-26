@@ -1,14 +1,13 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
 
-import { verify, decode } from 'jsonwebtoken'
+import { verify } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
 
 import axios from 'axios'
 
 import { certToPEM } from '../utils';
 
-import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 
 const logger = createLogger('auth')
@@ -22,11 +21,9 @@ export const handler = async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
   logger.info('Authorizing a user', event.authorizationToken)
-  console.log('Authorizing a user', event.authorizationToken)
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
     logger.info('User was authorized', jwtToken)
-    console.log('User was authorized', jwtToken)
 
     return {
       principalId: jwtToken.sub,
@@ -63,12 +60,6 @@ export const handler = async (
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader)
-  console.log(`Inside verifyToken ... token is ${token} `)
-
-  const jwt: Jwt = decode(token, { complete: true }) as Jwt
-
-  console.log("Inside verifyToken ... jwt is ${jwt}" + jwt.payload )
-
   const jwksRequest = await axios.get(jwksUrl)
 
   const signingKeys = jwksRequest.data.keys
@@ -79,14 +70,6 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
       ).map(key => {
         return { kid: key.kid, nbf: key.nbf, publicKey: certToPEM(key.x5c[0]) };
       });
-
-  console.log(`signingKeys[0].publicKey is ${signingKeys[0].publicKey}`)
-
-  //const result = verify(token, auth0Secret)
-
-  //console.log(`result is ${result}`)
-
-  //return verify(token, auth0Secret) as JwtPayload
   return verify(token, signingKeys[0].publicKey, { algorithms: ['RS256'] }) as JwtPayload;
 }
 

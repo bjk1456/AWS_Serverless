@@ -4,8 +4,13 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
 
 provider:
+  tracing:
+    lambda: true
+    apiGateway: true
   name: aws
   runtime: nodejs10.x
   iamRoleStatements:
@@ -38,6 +43,21 @@ provider:
     IMAGES_S3_BUCKET: serverless-bjk1456-udagram-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Serverless TODO Application
+        description: A simple TODO application using AWS Lambda and Serverless framework
+    models:
+      - name: CreateTodo
+        contentType: application/json
+        schema: ${file(models/create-todo-model.json)}
+      - name: UpdateTodo
+        contentType: application/json
+        schema: ${file(models/update-todo-model.json)}
+
 functions:
 
   Auth:
@@ -61,6 +81,12 @@ functions:
           method: post
           path: todos
           authorizer: Auth
+          reqValidatorName: RequestValidator
+          documentation:
+            summary: Create a new todo
+            description: Create a new todo
+            requestModels:
+              'application/json': CreateTodo
 
   # TODO: Configure this function
   UpdateTodo:
@@ -69,6 +95,12 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
+          reqValidatorName: RequestValidator
+          documentation:
+            summary: Update an existing todo
+            description: Update an existing todo
+            requestModels:
+              'application/json': UpdateTodo
 
   # TODO: Configure this function
   DeleteTodo:
@@ -99,6 +131,16 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
+
+    RequestValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:

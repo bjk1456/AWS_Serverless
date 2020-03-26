@@ -5,11 +5,7 @@ import {createUploadUrl} from "../../businessLogic/todos";
 
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-
-
   const todoId = event.pathParameters.todoId
-
-
   const url = createUploadUrl(todoId)
 
   return {
