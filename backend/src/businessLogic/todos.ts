@@ -1,9 +1,10 @@
 import 'source-map-support/register'
-import { TodoItem } from '../models/TodoItem'
-import { TodosAccess } from '../dataLayer/todosAccess'
+import {TodoItem} from '../models/TodoItem'
+import {TodosAccess} from '../dataLayer/todosAccess'
 import {parseUserId} from "../auth/utils";
 import {UpdateTodoRequest} from "../requests/UpdateTodoRequest";
 import * as AWS from "aws-sdk";
+
 const uuid = require('uuid')
 
 const todoAccess = new TodosAccess()
@@ -12,7 +13,7 @@ const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export async function getAllTodos(token:string): Promise<TodoItem[]> {
     const userId = parseUserId(token)
-    return todoAccess.getAllTodos(userId)
+    return await todoAccess.getAllTodos(userId)
 }
 
 export async function saveTodo(item:TodoItem, token:string): Promise<TodoItem>{
