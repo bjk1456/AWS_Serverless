@@ -7,7 +7,7 @@ import {getToken} from "../auth/auth0Authorizer";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const token = getToken(event.headers.Authorization)
-    const todos = await getAllTodos(token)
+    const items = await getAllTodos(token)
 
     return {
         statusCode: 200,
@@ -16,7 +16,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             'Access-Control-Allow-Credentials': true
         },
         body: JSON.stringify({
-            todos
+            items
         })
     }
 }
