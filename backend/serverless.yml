@@ -82,6 +82,7 @@ functions:
           path: todos
           authorizer: Auth
           reqValidatorName: RequestValidator
+          cors: true
           documentation:
             summary: Create a new todo
             description: Create a new todo
@@ -95,6 +96,8 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
+          authorizer: Auth
+          cors: true
           reqValidatorName: RequestValidator
           documentation:
             summary: Update an existing todo
@@ -110,6 +113,7 @@ functions:
           method: delete
           path: todos/{todoId}
           authorizer: Auth
+          cors: true
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -118,6 +122,8 @@ functions:
       - http:
           method: post
           path: todos/{todoId}/attachment
+          authorizer: Auth
+          cors: true
 
 resources:
   Resources:

@@ -20,9 +20,8 @@ export async function saveTodo(item:TodoItem, token:string): Promise<TodoItem>{
 
     const todoId = uuid.v4()
     const userId = parseUserId(token)
-    const createdAt = new Date().toString();
+    const createdAt = new Date(Date.now()).toISOString();
 
-    console.log(`item.name = ${item.name}`)
 
     let newTodo = <TodoItem>{
         todoId: todoId,

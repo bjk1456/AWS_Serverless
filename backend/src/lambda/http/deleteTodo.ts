@@ -9,6 +9,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     const todoId = event.pathParameters.todoId
     const jwt = getToken(event.headers.Authorization)
+    console.log(`inside of deleteTodo todoId == ${todoId}`)
     await deleteTodo(todoId,jwt)
 
     return {
