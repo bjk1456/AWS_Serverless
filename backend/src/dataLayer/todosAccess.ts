@@ -80,4 +80,17 @@ export class TodosAccess {
 
         return result
     }
+
+    async getTodosByIdUserId(todoId:string, userId:string){
+        const params = {
+            TableName: groupsTable,
+            Key:{
+                "todoId": todoId,
+                "userId": userId
+            }
+        }
+        const result = await this.docClient.get(params).promise()
+        console.log(`Inside getTodosByIdUserId ... result.Item== ${!!result.Item}`)
+        return !!result.Item
+    }
 }

@@ -17,7 +17,6 @@ export async function getAllTodos(token:string): Promise<TodoItem[]> {
 }
 
 export async function saveTodo(item:TodoItem, token:string): Promise<TodoItem>{
-
     const todoId = uuid.v4()
     const userId = parseUserId(token)
     const createdAt = new Date(Date.now()).toISOString();
@@ -27,7 +26,7 @@ export async function saveTodo(item:TodoItem, token:string): Promise<TodoItem>{
         todoId: todoId,
         userId: userId,
         createdAt: createdAt,
-        imageUrl: `https://${bucketName}.s3.amazon.com/${todoId}`,
+        attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`,
         ...item
     }
 
@@ -46,14 +45,19 @@ export async function updateTodo(todoId:string, token:string, updateItem:UpdateT
     return updatedTodo
 }
 
-export function createUploadUrl(imageId: string){
+export async function checkTodoExists(todoId: string, token:string){
+    const userId = parseUserId(token)
+    return await todoAccess.getTodosByIdUserId(todoId,userId)
+
+}
+export function createUploadUrl(todoId: string){
     const s3 = new AWS.S3({
         signatureVersion: 'v4'
     })
 
     return s3.getSignedUrl('putObject', {
         Bucket: bucketName,
-        Key: imageId,
+        Key: todoId,
         Expires: urlExpiration
     })
 }
